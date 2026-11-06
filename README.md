@@ -1,6 +1,8 @@
 # geometry_r
 
 [![CI](https://github.com/Pierre-Penven/geometry-r/actions/workflows/ci.yml/badge.svg)](https://github.com/Pierre-Penven/geometry-r/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/geometry_r.svg)](https://crates.io/crates/geometry_r)
+[![docs.rs](https://docs.rs/geometry_r/badge.svg)](https://docs.rs/geometry_r)
 
 A fast Rust library for geographic and satellite geometry on a round Earth.
 It is for developers who need correct results everywhere on the globe,
@@ -33,20 +35,25 @@ including across the **antimeridian** (±180°) and at the **poles**:
 
 ## Installation
 
-Add the crate to your project from git, or from a local checkout. It is not
-published to a registry (TODO: verify the long-term distribution channel):
+Add the crate from crates.io:
 
 ```sh
-cargo add geometry_r --git https://github.com/Pierre-Penven/geometry-r
-# or, from a local clone:
-cargo add geometry_r --path /path/to/geometry-r
+cargo add geometry_r
 ```
 
 To use multi-core batch functions, enable the `parallel` feature:
 
 ```sh
-cargo add geometry_r --path /path/to/geometry-r --features parallel
+cargo add geometry_r --features parallel
 ```
+
+To track unreleased changes, depend on the git repository instead:
+
+```sh
+cargo add geometry_r --git https://github.com/Pierre-Penven/geometry-r
+```
+
+API documentation: <https://docs.rs/geometry_r>.
 
 ## Configuration
 

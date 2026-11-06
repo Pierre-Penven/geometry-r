@@ -166,9 +166,20 @@ Per-call options are plain structs: `geojson::ReadOptions`, `WriteOptions` and
 | Everything | `make check` |
 | CI | GitHub Actions (`.github/workflows/ci.yml`): every PR and push to `main` runs lint, tests and docs on latest stable, tests on the MSRV (1.88), `cargo audit` and coverage |
 
-**Deploy:** the host adds the crate as a Cargo dependency, from a local path
-or from git (`https://github.com/Pierre-Penven/geometry-r`). It is not
-published to a registry. TODO: verify the long-term distribution channel.
+**Deploy:** the crate is published on crates.io as `geometry_r`
+(<https://crates.io/crates/geometry_r>), with API docs on docs.rs. Hosts add
+it with `cargo add geometry_r`.
+
+**Release process:**
+1. Update `CHANGELOG.md` and bump `version` in `Cargo.toml` (semantic
+   versioning; before 1.0 a minor bump may break the API).
+2. Open a PR and merge it once CI is green.
+3. From an up-to-date `main`, run `cargo publish --dry-run`, then
+   `cargo publish`.
+4. Tag the release: `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`.
+
+A published version is permanent. A broken release can be hidden from new
+dependents with `cargo yank --version X.Y.Z`, but never deleted.
 
 ## 8. Operations
 

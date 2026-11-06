@@ -57,6 +57,10 @@ Note: the library is general-purpose. Do not mention any specific application
   - `cargo audit`
   - `cargo llvm-cov` (lcov uploaded as an artifact)
   Keep it green before merging.
+- Distribution: crates.io (`geometry_r`), API docs on docs.rs. Follow the
+  release process in `docs/technical-design.md` §7 and keep `CHANGELOG.md`
+  up to date. Publishing is permanent: never run `cargo publish` without the
+  owner's explicit go-ahead.
 - Dependency audit: `make audit` (`cargo install cargo-audit --locked`).
   Expect a clean result.
 - Coverage: `make cov` (`cargo install cargo-llvm-cov --locked` plus

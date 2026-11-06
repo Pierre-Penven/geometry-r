@@ -7,6 +7,8 @@ description = "High-performance geodesy and spherical geometry on a round Earth:
 license = "MIT"
 repository = "https://github.com/Pierre-Penven/geometry-r"
 readme = "README.md"
+documentation = "https://docs.rs/geometry_r"
+exclude = [".github/", "scripts/", "docs/", "Makefile", "CLAUDE.md", "rustfmt.toml"]
 keywords = ["geodesy", "ecef", "satellite", "geojson", "polygon"]
 categories = ["science::geo", "mathematics", "aerospace"]
 
@@ -20,6 +22,9 @@ thiserror = "2"
 default = []
 # Batch helpers that run on all cores via rayon.
 parallel = ["dep:rayon"]
+
+[package.metadata.docs.rs]
+all-features = true
 
 [dev-dependencies]
 approx = "0.5.1"
