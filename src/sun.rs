@@ -9,7 +9,7 @@
 use crate::coords::Ecef;
 use crate::ellipsoid::EARTH_MEAN_RADIUS_M;
 use crate::error::{GeoError, Result};
-use crate::math::{bisect_last_true, bisect_steps_for, wrap_two_pi, Mat3, Vec3};
+use crate::math::{Mat3, Vec3, bisect_last_true, bisect_steps_for, wrap_two_pi};
 
 /// Astronomical unit in metres.
 pub const AU_M: f64 = 149_597_870_700.0;

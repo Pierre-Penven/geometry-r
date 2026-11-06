@@ -7,9 +7,9 @@
 
 use crate::error::{GeoError, Result};
 use crate::math::wrap_lon_delta_deg;
-use crate::polygon::antimeridian::{to_rfc7946, LonLatPolygon};
+use crate::polygon::antimeridian::{LonLatPolygon, to_rfc7946};
 use crate::polygon::{LonLat, MultiPolygon, Polygon};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 /// How the straight edges of input GeoJSON rings are interpreted.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -116,7 +116,7 @@ fn collect(v: &Value, opts: &ReadOptions, out: &mut Vec<Polygon>) -> Result<()> 
         other => {
             return Err(err(format!(
                 "unsupported geometry type {other:?} (only polygonal types)"
-            )))
+            )));
         }
     }
     Ok(())

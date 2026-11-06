@@ -5,7 +5,7 @@
 use crate::coords::{Ecef, Geodetic, LocalFrame, LookAngles};
 use crate::ellipsoid::WGS84;
 use crate::error::{GeoError, Result};
-use crate::math::{wrap_pi, wrap_two_pi, Vec3};
+use crate::math::{Vec3, wrap_pi, wrap_two_pi};
 use crate::satellite::geo_satellite_position;
 use std::f64::consts::{FRAC_PI_2, PI, TAU};
 

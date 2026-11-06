@@ -4,7 +4,7 @@
 //! allocate. With the `parallel` feature, `par_*` variants spread the work
 //! over all cores with rayon.
 
-use crate::coords::{ecef_to_geodetic, geodetic_to_ecef, Ecef, Geodetic, LocalFrame, LookAngles};
+use crate::coords::{Ecef, Geodetic, LocalFrame, LookAngles, ecef_to_geodetic, geodetic_to_ecef};
 use crate::ellipsoid::Ellipsoid;
 use crate::error::{GeoError, Result};
 use crate::footprint::{Beam, BeamShape};
@@ -134,8 +134,8 @@ pub mod par {
 mod tests {
     use super::*;
     use crate::ellipsoid::WGS84;
-    use crate::polygon::{lonlat_to_unit, Polygon};
-    use crate::satellite::{geo_satellite_position, NadirReference};
+    use crate::polygon::{Polygon, lonlat_to_unit};
+    use crate::satellite::{NadirReference, geo_satellite_position};
 
     fn pts() -> Vec<Geodetic> {
         (0..50)

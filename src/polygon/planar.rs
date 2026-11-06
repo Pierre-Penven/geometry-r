@@ -2,9 +2,10 @@
 //! splitter (`antimeridian`): signed area, winding number, the winding-offset
 //! correction, and the adapter that hides i_overlay's orientation convention.
 //!
-//! All contours handed to i_overlay use **mirrored y** coordinates: i_overlay's
-//! `FillRule::Positive` fills clockwise contours, while our "inside" contours
-//! are counter-clockwise in the unmirrored plane.
+//! Convention: a contour that encloses "inside" is counter-clockwise, which
+//! is what i_overlay ≥ 4 fills under `FillRule::Positive`. Gnomonic charts
+//! preserve orientation, so a spherical exterior ring (counter-clockwise seen
+//! from outside) projects to a filled contour without any flipping.
 
 /// An open planar contour (first point not repeated).
 pub(crate) type Contour = Vec<[f64; 2]>;
@@ -40,10 +41,10 @@ pub(crate) fn winding_number(c: &[[f64; 2]], p: [f64; 2]) -> i32 {
     w
 }
 
-/// Fill count at `p` of mirrored contours: a filled (clockwise in mirrored
-/// coordinates) contour counts +1.
-pub(crate) fn fill_count(contours: &[Contour], p_mirrored: [f64; 2]) -> i32 {
-    -contours.iter().map(|c| winding_number(c, p_mirrored)).sum::<i32>()
+/// Fill count at `p`: each counter-clockwise (filled) contour around `p`
+/// counts +1, each clockwise one −1.
+pub(crate) fn fill_count(contours: &[Contour], p: [f64; 2]) -> i32 {
+    contours.iter().map(|c| winding_number(c, p)).sum::<i32>()
 }
 
 /// Makes the fill count right everywhere in a convex window.
@@ -54,13 +55,8 @@ pub(crate) fn fill_count(contours: &[Contour], p_mirrored: [f64; 2]) -> i32 {
 /// a constant `k` over the window. Comparing with one exact membership test
 /// (`want`, 0 or 1) at a sample point gives `k`, and `|k|` copies of the window
 /// contour (filled when `k > 0`, reversed when `k < 0`) fix it.
-pub(crate) fn push_window_offset(
-    contours: &mut Vec<Contour>,
-    window_filled: &[[f64; 2]],
-    p_mirrored: [f64; 2],
-    want: bool,
-) {
-    let k = i32::from(want) - fill_count(contours, p_mirrored);
+pub(crate) fn push_window_offset(contours: &mut Vec<Contour>, window_filled: &[[f64; 2]], p: [f64; 2], want: bool) {
+    let k = i32::from(want) - fill_count(contours, p);
     for _ in 0..k.unsigned_abs() {
         if k > 0 {
             contours.push(window_filled.to_vec());
@@ -70,13 +66,13 @@ pub(crate) fn push_window_offset(
     }
 }
 
-/// Orients one i_overlay output shape (mirrored coordinates): outer contour
-/// clockwise, holes counter-clockwise. i_overlay already does this; the
-/// check keeps us independent of that convention.
+/// Orients one i_overlay output shape: outer contour counter-clockwise,
+/// holes clockwise. i_overlay 4 already does this (1.x did the opposite);
+/// the check keeps us independent of that convention.
 pub(crate) fn orient_shape(shape: &mut [Contour]) {
     for (k, contour) in shape.iter_mut().enumerate() {
         let a = signed_area(contour);
-        if (k == 0 && a > 0.0) || (k > 0 && a < 0.0) {
+        if (k == 0 && a < 0.0) || (k > 0 && a > 0.0) {
             contour.reverse();
         }
     }
@@ -90,6 +86,10 @@ mod tests {
 
     fn cw() -> Contour {
         SQUARE_CCW.iter().rev().copied().collect()
+    }
+
+    fn ccw() -> Contour {
+        SQUARE_CCW.to_vec()
     }
 
     #[test]
@@ -107,45 +107,46 @@ mod tests {
     }
 
     #[test]
-    fn fill_count_treats_clockwise_mirrored_contours_as_filled() {
-        assert_eq!(fill_count(&[cw()], [0.5, 0.5]), 1);
-        assert_eq!(fill_count(&[cw(), cw()], [0.5, 0.5]), 2);
+    fn fill_count_treats_counter_clockwise_contours_as_filled() {
+        assert_eq!(fill_count(&[ccw()], [0.5, 0.5]), 1);
+        assert_eq!(fill_count(&[ccw(), ccw()], [0.5, 0.5]), 2);
+        assert_eq!(fill_count(&[cw()], [0.5, 0.5]), -1);
         assert_eq!(fill_count(&[], [0.5, 0.5]), 0);
     }
 
     #[test]
     fn window_offset_adds_filled_window_when_point_should_be_inside() {
         let mut c: Vec<Contour> = Vec::new();
-        push_window_offset(&mut c, &cw(), [0.5, 0.5], true);
+        push_window_offset(&mut c, &ccw(), [0.5, 0.5], true);
         assert_eq!(c.len(), 1);
         assert_eq!(fill_count(&c, [0.5, 0.5]), 1);
     }
 
     #[test]
     fn window_offset_adds_reversed_window_when_count_is_too_high() {
-        let mut c = vec![cw(), cw()];
-        push_window_offset(&mut c, &cw(), [0.5, 0.5], true);
+        let mut c = vec![ccw(), ccw()];
+        push_window_offset(&mut c, &ccw(), [0.5, 0.5], true);
         assert_eq!(c.len(), 3);
         assert_eq!(fill_count(&c, [0.5, 0.5]), 1);
     }
 
     #[test]
     fn window_offset_adds_nothing_when_count_is_already_right() {
-        let mut c = vec![cw()];
-        push_window_offset(&mut c, &cw(), [0.5, 0.5], true);
+        let mut c = vec![ccw()];
+        push_window_offset(&mut c, &ccw(), [0.5, 0.5], true);
         assert_eq!(c.len(), 1);
         let mut empty: Vec<Contour> = Vec::new();
-        push_window_offset(&mut empty, &cw(), [0.5, 0.5], false);
+        push_window_offset(&mut empty, &ccw(), [0.5, 0.5], false);
         assert!(empty.is_empty());
     }
 
     #[test]
     fn orient_shape_fixes_outer_and_hole_orientation() {
-        let hole_small: Contour = vec![[0.2, 0.2], [0.2, 0.4], [0.4, 0.4], [0.4, 0.2]]; // clockwise
-        let mut shape = vec![SQUARE_CCW.to_vec(), hole_small];
+        let hole_small: Contour = vec![[0.2, 0.2], [0.4, 0.2], [0.4, 0.4], [0.2, 0.4]]; // counter-clockwise
+        let mut shape = vec![cw(), hole_small];
         orient_shape(&mut shape);
-        assert!(signed_area(&shape[0]) < 0.0, "outer must be clockwise");
-        assert!(signed_area(&shape[1]) > 0.0, "hole must be counter-clockwise");
+        assert!(signed_area(&shape[0]) > 0.0, "outer must be counter-clockwise");
+        assert!(signed_area(&shape[1]) < 0.0, "hole must be clockwise");
         // Already correct input is left unchanged.
         let before = shape.clone();
         orient_shape(&mut shape);

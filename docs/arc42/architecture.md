@@ -39,7 +39,7 @@ Every operation is correct across the antimeridian and at the poles.
 
 | Constraint | Consequence |
 |---|---|
-| Rust 1.81 toolchain (`rust-version = "1.81"`) | Every dependency must build on 1.81. `geo` is excluded (see [ADR 0002](../adr/0002-planar-engine-i-overlay.md)). `criterion` is not used. No float arithmetic in `const fn`. |
+| Rust 2024 edition, MSRV 1.88 (`rust-version = "1.88"`) | Users need Rust 1.88 or newer. Every dependency must build on 1.88 (checked in CI). See [ADR 0005](../adr/0005-edition-2024-msrv-1-88.md). |
 | Library only | No configuration files, environment variables or deployment of its own. |
 | WGS-84 / GeoJSON conventions | Coordinates are `[lon, lat]` in degrees at the boundaries and radians internally. Polygons follow RFC 7946 on output. |
 | `unsafe_code = "forbid"` | Only safe Rust. |
@@ -159,7 +159,8 @@ process.
 | [0001](../adr/0001-unit-vector-spherical-model.md) | Spherical model on unit vectors with great-circle edges |
 | [0002](../adr/0002-planar-engine-i-overlay.md) | `i_overlay` as the planar boolean engine; no `geo` |
 | [0003](../adr/0003-gnomonic-chart-and-cube-faces.md) | Gnomonic chart with cube-face fallback for spherical booleans |
-| [0004](../adr/0004-pin-rust-1-81.md) | Target Rust 1.81 |
+| [0004](../adr/0004-pin-rust-1-81.md) | Target Rust 1.81 (superseded by 0005) |
+| [0005](../adr/0005-edition-2024-msrv-1-88.md) | Edition 2024, MSRV Rust 1.88, i_overlay 4 |
 
 ## 10. Quality Requirements
 
@@ -191,8 +192,7 @@ that makes one of them noticeably slower is a regression.
 | Planar snapping in i_overlay (about extent/2³⁰) | ~6 cm on an 85° chart, ~0.1 m on split GeoJSON output | Documented; small polygons are far more precise |
 | A test point exactly on a polygon edge in the winding-offset correction | Wrong offset on one face | Test points chosen at "irrational" coordinates; very unlikely |
 | Point-in-polygon is O(n) per query | Slow for very large rings | Edge index (roadmap) |
-| Rust 1.81 pin | Older dependency versions | Revisit when the toolchain is upgraded |
-| RUSTSEC-2025-0165: `i_tree` 0.8.3 (via `i_overlay` 1.10) exposes unsound safe accessors (`Tree::node`, `Tree::mut_node`) | Undefined behaviour only if called with an out-of-range index; geometry_r never calls `i_tree`, and `i_overlay` passes internal indices | Accepted while on Rust 1.81: the fix (`i_tree` ≥ 0.10) needs `i_overlay` ≥ 2, whose dependencies need Rust ≥ 1.85 |
+| Dependency upgrades that change i_overlay's orientation convention (as 1.x → 4.x did) | Wrong polygon results | All orientation handling sits in `polygon::planar`; the boolean and RFC 7946 tests catch a flip |
 
 ## 12. Glossary
 

@@ -9,9 +9,9 @@
 //! All angles are in radians, all distances in metres.
 
 use crate::coords::Geodetic;
-use crate::ellipsoid::{Ellipsoid, EARTH_MEAN_RADIUS_M};
+use crate::ellipsoid::{EARTH_MEAN_RADIUS_M, Ellipsoid};
 use crate::error::{GeoError, Result};
-use crate::math::{wrap_pi, wrap_two_pi, Vec3};
+use crate::math::{Vec3, wrap_pi, wrap_two_pi};
 
 /// Below this projection length a point is treated as a pole of a great
 /// circle (|sin| of its distance from the pole, ≈ 6 µm on the Earth).

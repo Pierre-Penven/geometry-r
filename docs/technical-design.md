@@ -102,8 +102,8 @@ let json = geometry_r::geojson::to_string(&a, &Default::default()); // MultiPoly
    - difference: the subject
    - union and xor: both inputs together
 2. **Chart path.** If `fits_one_chart` succeeds:
-   1. `Chart::project_polygons` maps every ring to mirrored-y gnomonic
-      coordinates.
+   1. `Chart::project_polygons` maps every ring to gnomonic coordinates
+      (orientation is preserved).
    2. i_overlay runs with `FillRule::Positive`.
    3. `shape_to_polygon` calls `orient_shape`, unprojects, runs `clean_ring`,
       and drops collapsed shapes.
@@ -133,7 +133,7 @@ dropped.
    3. Intersect with the world rectangle.
    4. `orient_shape`.
    5. `Restorer::restore` re-inserts collinear vertices.
-   6. Unmirror and snap to ±180 / ±90.
+   6. Snap to ±180 / ±90.
 
 ### Coverage contour
 
@@ -160,11 +160,11 @@ Per-call options are plain structs: `geojson::ReadOptions`, `WriteOptions` and
 | Build | `cargo build --release` |
 | Format / lint | `make fmt`, `make lint` (clippy `-D warnings`) |
 | Tests | `make test` (unit + `tests/scenarios.rs` + doctests) |
-| Coverage | `make cov` (needs `llvm-tools-preview` and `cargo-llvm-cov 0.6.21`) |
+| Coverage | `make cov` (needs `llvm-tools-preview` and `cargo-llvm-cov`) |
 | Benchmarks | `make bench` |
 | API docs | `make docs` (also runs the doc checks) |
 | Everything | `make check` |
-| CI | GitHub Actions (`.github/workflows/ci.yml`): every PR and push to `main` runs the 1.81 checks, tests on latest stable, `cargo audit` and coverage |
+| CI | GitHub Actions (`.github/workflows/ci.yml`): every PR and push to `main` runs lint, tests and docs on latest stable, tests on the MSRV (1.88), `cargo audit` and coverage |
 
 **Deploy:** the host adds the crate as a Cargo dependency, from a local path
 or from git (`https://github.com/Pierre-Penven/geometry-r`). It is not
@@ -193,16 +193,11 @@ owns those. Failure modes surface as `GeoError` values:
   sets no hard limits. Hosts that accept untrusted GeoJSON should cap the
   payload size and vertex count before parsing.
 - Dependencies: `i_overlay`, `serde_json`, `thiserror`, and optionally
-  `rayon`. Run `cargo audit` to check them against the RustSec database.
-  - The last audit (2026-11-06) found 0 vulnerabilities and 1 informational
-    warning: RUSTSEC-2025-0165, `i_tree` 0.8.3 "unsound", pulled in by
-    `i_overlay` 1.10.
-  - geometry_r never calls the affected functions. The fix needs a newer
-    toolchain (see the risks in the arc42 document).
-  - The tool is `cargo-audit` 0.22.2, built with a side toolchain
-    (`cargo +1.88.0 install cargo-audit --locked`) because the version that
-    builds on 1.81 (0.21.2) cannot parse current advisories that use CVSS 4.0
-    scores.
+  `rayon`. Run `cargo audit` (`make audit`, also in CI) to check them
+  against the RustSec database. The last audit (2026-11-06, after the move
+  to `i_overlay` 4.5) is clean. The earlier informational advisory
+  RUSTSEC-2025-0165 (`i_tree` 0.8.3, via `i_overlay` 1.10) is gone with
+  `i_tree` 0.18.
 
 ## 10. Known Limitations
 

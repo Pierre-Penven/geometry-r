@@ -14,8 +14,8 @@
 //!    otherwise they are returned as separate polygons (correct area and
 //!    membership, with seams along cube edges).
 
-use super::planar::{orient_shape, push_window_offset, Contour};
-use super::{clean_ring, enclosing_cap, ring_signed_area, Cap, MultiPolygon, Polygon};
+use super::planar::{Contour, orient_shape, push_window_offset};
+use super::{Cap, MultiPolygon, Polygon, clean_ring, enclosing_cap, ring_signed_area};
 use crate::math::Vec3;
 use i_overlay::core::{fill_rule::FillRule, overlay_rule::OverlayRule};
 use i_overlay::float::single::SingleFloatOverlay;
@@ -24,13 +24,13 @@ use i_overlay::float::single::SingleFloatOverlay;
 /// gnomonic scale grows quickly and planar snapping loses precision.
 const CHART_MAX_RAD: f64 = 85.0 * std::f64::consts::PI / 180.0;
 
-/// Sample point (face coordinates, mirrored) used to fix the winding offset
+/// Sample point (face coordinates) used to fix the winding offset
 /// of a cube face. Any interior point works; an "irrational-looking" one is
 /// unlikely to sit exactly on a polygon edge.
 const FACE_TEST_POINT: [f64; 2] = [0.123_456_789, -0.071_234_567];
 
-/// The face square `[-1, 1]²`, clockwise in mirrored coordinates (filled).
-const FACE_SQUARE_FILLED: [[f64; 2]; 4] = [[-1.0, -1.0], [-1.0, 1.0], [1.0, 1.0], [1.0, -1.0]];
+/// The face square `[-1, 1]²`, counter-clockwise (filled).
+const FACE_SQUARE_FILLED: [[f64; 2]; 4] = [[-1.0, -1.0], [1.0, -1.0], [1.0, 1.0], [-1.0, 1.0]];
 
 /// A boolean operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,8 +56,8 @@ impl BooleanOp {
     }
 }
 
-/// A gnomonic chart centred on `c`, producing mirrored planar coordinates
-/// (see [`super::planar`]).
+/// A gnomonic chart centred on `c`. The basis `e1, e2 = c × e1` is
+/// right-handed seen from outside, so orientation is preserved.
 #[derive(Debug, Clone, Copy)]
 struct Chart {
     c: Vec3,
@@ -74,12 +74,12 @@ impl Chart {
     #[inline]
     fn project(&self, p: Vec3) -> [f64; 2] {
         let d = p.dot(self.c);
-        [p.dot(self.e1) / d, -p.dot(self.e2) / d]
+        [p.dot(self.e1) / d, p.dot(self.e2) / d]
     }
 
     #[inline]
     fn unproject(&self, q: [f64; 2]) -> Vec3 {
-        (self.c + self.e1 * q[0] - self.e2 * q[1]).normalize()
+        (self.c + self.e1 * q[0] + self.e2 * q[1]).normalize()
     }
 
     fn project_polygons(&self, polys: &[&Polygon]) -> Vec<Contour> {
@@ -369,7 +369,7 @@ impl Polygon {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::polygon::{lonlat_to_unit, Orientation};
+    use crate::polygon::{Orientation, lonlat_to_unit};
     use approx::assert_abs_diff_eq;
     use std::f64::consts::{FRAC_PI_2, PI};
 
@@ -576,18 +576,18 @@ mod tests {
     }
 
     #[test]
-    fn chart_round_trip_and_mirroring() {
+    fn chart_round_trip_and_orientation() {
         let chart = Chart::new(lonlat_to_unit([30.0, 40.0]));
         let v = lonlat_to_unit([31.0, 41.0]);
         let q = chart.project(v);
         assert_abs_diff_eq!(chart.unproject(q).dot(v), 1.0, epsilon = 1e-14);
-        // Counter-clockwise on the sphere is clockwise (filled) in the chart.
+        // Counter-clockwise on the sphere stays counter-clockwise (filled).
         let ring: Vec<[f64; 2]> = rect(30.0, 40.0, 31.0, 41.0)
             .exterior()
             .iter()
             .map(|&p| chart.project(p))
             .collect();
-        assert!(crate::polygon::planar::signed_area(&ring) < 0.0);
+        assert!(crate::polygon::planar::signed_area(&ring) > 0.0);
     }
 
     #[test]

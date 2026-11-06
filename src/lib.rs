@@ -52,10 +52,10 @@ pub mod prelude {
     pub use crate::coords::{Ecef, Geodetic, LocalFrame, LookAngles};
     pub use crate::ellipsoid::{Ellipsoid, WGS84};
     pub use crate::error::{GeoError, Result};
-    pub use crate::footprint::{beam_footprint, coverage_contour, Beam, BeamShape};
+    pub use crate::footprint::{Beam, BeamShape, beam_footprint, coverage_contour};
     pub use crate::geodesic::{great_circle_distance, initial_bearing, vincenty_inverse};
     pub use crate::look::{is_visible, look_angles};
     pub use crate::math::{Mat3, Vec3};
     pub use crate::polygon::{Cap, LonLat, MultiPolygon, Orientation, Polygon};
-    pub use crate::satellite::{geo_satellite_position, SatelliteFrame, ScanAngles};
+    pub use crate::satellite::{SatelliteFrame, ScanAngles, geo_satellite_position};
 }

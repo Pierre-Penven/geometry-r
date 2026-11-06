@@ -22,13 +22,7 @@ pub struct Ellipsoid {
 }
 
 /// WGS-84 ellipsoid (GPS, GeoJSON and most satellite systems).
-pub const WGS84: Ellipsoid = Ellipsoid {
-    a: 6_378_137.0,
-    f: 1.0 / 298.257_223_563,
-    b: 6_356_752.314_245_179,
-    e2: 0.006_694_379_990_141_317,
-    ep2: 0.006_739_496_742_276_435,
-};
+pub const WGS84: Ellipsoid = Ellipsoid::new(6_378_137.0, 1.0 / 298.257_223_563);
 
 /// Mean Earth radius `R1 = (2a + b) / 3` for WGS-84, in metres.
 pub const EARTH_MEAN_RADIUS_M: f64 = 6_371_008.771_415;
@@ -52,7 +46,7 @@ pub const SPEED_OF_LIGHT_M_S: f64 = 299_792_458.0;
 impl Ellipsoid {
     /// Builds an ellipsoid from its semi-major axis (m) and flattening.
     #[must_use]
-    pub fn new(a: f64, f: f64) -> Self {
+    pub const fn new(a: f64, f: f64) -> Self {
         let b = a * (1.0 - f);
         let e2 = f * (2.0 - f);
         let ep2 = e2 / ((1.0 - f) * (1.0 - f));
@@ -184,11 +178,11 @@ mod tests {
     use approx::assert_abs_diff_eq;
 
     #[test]
-    fn wgs84_matches_derived_values() {
-        let d = Ellipsoid::new(WGS84.a, WGS84.f);
-        assert_abs_diff_eq!(d.b, WGS84.b, epsilon = 1e-8);
-        assert_abs_diff_eq!(d.e2, WGS84.e2, epsilon = 1e-17);
-        assert_abs_diff_eq!(d.ep2, WGS84.ep2, epsilon = 1e-17);
+    fn new_derives_axes_and_eccentricities_from_flattening() {
+        let s = Ellipsoid::new(10.0, 0.5);
+        assert_eq!(s.b, 5.0);
+        assert_eq!(s.e2, 0.75);
+        assert_eq!(s.ep2, 3.0);
     }
 
     #[test]

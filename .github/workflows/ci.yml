@@ -19,11 +19,11 @@ env:
 
 jobs:
   check:
-    name: Lint, test, docs (Rust 1.81)
+    name: Lint, test, docs (stable)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.81.0
+      - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
@@ -42,17 +42,17 @@ jobs:
       - name: Documentation checks
         run: make docs-check
 
-  test-stable:
-    name: Tests (latest stable)
+  msrv:
+    name: Tests (MSRV 1.88)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.88.0
       - uses: Swatinem/rust-cache@v2
       - name: Tests (all features)
         run: cargo test --all-features
         env:
-          # New stable lints must not break the build; clippy runs on 1.81.
+          # Lints are enforced on stable; older compilers may warn differently.
           RUSTFLAGS: ""
 
   audit:
@@ -81,8 +81,6 @@ jobs:
           tool: cargo-llvm-cov
       - name: Coverage summary
         run: cargo llvm-cov --all-features --summary-only | tee coverage.txt
-        env:
-          RUSTFLAGS: ""
       - name: Coverage report (lcov)
         run: cargo llvm-cov report --lcov --output-path lcov.info
       - uses: actions/upload-artifact@v4

@@ -3,7 +3,7 @@
 //!
 //! Run with `cargo run --example quickstart`.
 
-use geometry_r::footprint::{beam_footprint, coverage_contour, BeamShape};
+use geometry_r::footprint::{BeamShape, beam_footprint, coverage_contour};
 use geometry_r::geojson::{self, WriteOptions};
 use geometry_r::polygon::MultiPolygon;
 use geometry_r::prelude::*;

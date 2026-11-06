@@ -1,8 +1,8 @@
 [package]
 name = "geometry_r"
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.88"
 description = "High-performance geodesy and spherical geometry on a round Earth: ECEF, look/scan angles, geodesics, beam footprints and antimeridian-safe GeoJSON polygon booleans."
 license = "MIT"
 repository = "https://github.com/Pierre-Penven/geometry-r"
@@ -11,10 +11,10 @@ keywords = ["geodesy", "ecef", "satellite", "geojson", "polygon"]
 categories = ["science::geo", "mathematics", "aerospace"]
 
 [dependencies]
-i_overlay = "1.10"
+i_overlay = "4"
 rayon = { version = "1.10", optional = true }
 serde_json = "1.0"
-thiserror = "1"
+thiserror = "2"
 
 [features]
 default = []

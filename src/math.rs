@@ -343,11 +343,7 @@ pub fn wrap_two_pi(a: f64) -> f64 {
     use std::f64::consts::TAU;
     let r = a.rem_euclid(TAU);
     // rem_euclid can return TAU itself for tiny negative inputs.
-    if r >= TAU {
-        0.0
-    } else {
-        r
-    }
+    if r >= TAU { 0.0 } else { r }
 }
 
 /// Wraps a longitude in degrees to `[-180, 180)`; `180` maps to `-180`.
@@ -357,11 +353,7 @@ pub fn wrap_two_pi(a: f64) -> f64 {
 #[must_use]
 pub fn wrap_lon_deg(lon: f64) -> f64 {
     let r = (lon + 180.0).rem_euclid(360.0) - 180.0;
-    if r >= 180.0 {
-        -180.0
-    } else {
-        r
-    }
+    if r >= 180.0 { -180.0 } else { r }
 }
 
 /// Wraps a longitude difference in degrees to `(-180, 180]`: the shortest
@@ -370,11 +362,7 @@ pub fn wrap_lon_deg(lon: f64) -> f64 {
 #[must_use]
 pub fn wrap_lon_delta_deg(d: f64) -> f64 {
     let r = (d + 180.0).rem_euclid(360.0) - 180.0;
-    if r <= -180.0 {
-        180.0
-    } else {
-        r
-    }
+    if r <= -180.0 { 180.0 } else { r }
 }
 
 /// Wraps a longitude in degrees to `(-180, 180]` (keeps `+180`).
@@ -382,11 +370,7 @@ pub fn wrap_lon_delta_deg(d: f64) -> f64 {
 #[must_use]
 pub fn wrap_lon_deg_closed(lon: f64) -> f64 {
     let r = wrap_lon_deg(lon);
-    if r == -180.0 && lon > 0.0 {
-        180.0
-    } else {
-        r
-    }
+    if r == -180.0 && lon > 0.0 { 180.0 } else { r }
 }
 
 #[cfg(test)]
@@ -470,8 +454,13 @@ mod tests {
 
     #[test]
     fn wrap_lon_deg_maps_rounding_to_plus_180_onto_minus_180() {
-        // (lon + 180).rem_euclid(360) rounds to 360 for a tiny negative offset.
-        assert_eq!(wrap_lon_deg(-180.0 - 1e-14), -180.0);
+        // One ulp below -180 (a smaller offset rounds back to exactly -180):
+        // lon + 180 is a tiny negative number and rem_euclid(360) rounds it to
+        // 360, which must still map to -180.
+        let lon: f64 = -180.0 - 3e-14;
+        assert!(lon < -180.0);
+        assert_eq!((lon + 180.0).rem_euclid(360.0), 360.0);
+        assert_eq!(wrap_lon_deg(lon), -180.0);
     }
 
     #[test]

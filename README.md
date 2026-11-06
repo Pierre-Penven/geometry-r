@@ -27,7 +27,7 @@ including across the **antimeridian** (±180°) and at the **poles**:
 ## Requirements
 
 - Linux, macOS or Windows.
-- Rust **1.81** or newer, with Cargo (install from <https://rustup.rs>).
+- Rust **1.88** or newer, with Cargo (install from <https://rustup.rs>).
 - Optional, for coverage reports: `llvm-tools-preview` and `cargo-llvm-cov`
   (see [Getting help and contributing](#getting-help-and-contributing)).
 
@@ -174,7 +174,7 @@ cargo run --release --example bench
 | `NoConvergence` from `vincenty_inverse` | The points are nearly antipodal. Use `geodesic_distance`, which falls back to the sphere. |
 | A polygon covers the "wrong side" of the Earth | It is larger than a hemisphere. Build it with `Orientation::AsGiven` and a counter-clockwise exterior. |
 | A union of very large regions has straight cuts | Results larger than a hemisphere are returned as cube-face pieces. Area and containment are correct. |
-| `cargo install cargo-llvm-cov` fails | Recent versions need a newer rustc. Use `--version 0.6.21 --locked` with Rust 1.81. |
+| Build fails with "requires rustc 1.88 or newer" | Update Rust: `rustup update stable`. |
 
 ## Getting help and contributing
 
@@ -183,7 +183,7 @@ cargo run --release --example bench
 
   ```sh
   rustup component add llvm-tools-preview
-  cargo install cargo-llvm-cov --version 0.6.21 --locked
+  cargo install cargo-llvm-cov --locked
   make cov
   ```
 - Project conventions and requirements: [`CLAUDE.md`](CLAUDE.md).
