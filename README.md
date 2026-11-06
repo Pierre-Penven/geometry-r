@@ -1,5 +1,7 @@
 # geometry_r
 
+[![CI](https://github.com/Pierre-Penven/geometry-r/actions/workflows/ci.yml/badge.svg)](https://github.com/Pierre-Penven/geometry-r/actions/workflows/ci.yml)
+
 A fast Rust library for geographic and satellite geometry on a round Earth.
 It is for developers who need correct results everywhere on the globe,
 including across the **antimeridian** (±180°) and at the **poles**:

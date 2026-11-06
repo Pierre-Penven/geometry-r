@@ -48,6 +48,13 @@ Note: the library is general-purpose. Do not mention any specific application
   `application-documentation` skills. Before saying any work is done, run
   `make check`. It runs clippy `-D warnings`, the tests (including README
   doctests), `cargo doc`, the doc checks, and `cargo fmt --check`.
+- CI: `.github/workflows/ci.yml` runs on every PR and push to `main`:
+  - fmt, clippy, tests (all features and default features), rustdoc
+    `-D warnings` and the doc checks, on Rust 1.81
+  - tests on the latest stable
+  - `cargo audit`
+  - `cargo llvm-cov` (lcov uploaded as an artifact)
+  Keep it green before merging.
 - Dependency audit: `make audit` (cargo-audit 0.22.2 built with
   `cargo +1.88.0`; the 1.81-compatible 0.21.2 cannot parse CVSS 4.0
   advisories). Known and accepted: RUSTSEC-2025-0165 (`i_tree` via
