@@ -163,16 +163,18 @@ process.
 
 ## 10. Quality Requirements
 
-Measured baselines on the development machine (`cargo run --release --example bench`):
+Measured baselines on the development machine (`cargo run --release --example bench`).
+The owner accepted the current baselines as targets (2026-11-06): a change
+that makes one of them noticeably slower is a regression.
 
 | Scenario | Baseline | Target |
 |---|---|---|
-| Look angles with a precomputed frame | ~22 ns | TODO: verify |
-| ECEF → geodetic | ~55 ns | TODO: verify |
-| Point in beam (analytic) | ~26 ns | TODO: verify |
-| 1 M look angles, one core | ~21 ms | TODO: verify |
-| Intersection of two 256-vertex polygons across ±180° | ~0.4 ms | TODO: verify |
-| Union of two GEO coverages (cube path) | ~1.7 ms | TODO: verify |
+| Look angles with a precomputed frame | ~22 ns | ~22 ns |
+| ECEF → geodetic | ~55 ns | ~55 ns |
+| Point in beam (analytic) | ~26 ns | ~26 ns |
+| 1 M look angles, one core | ~21 ms | ~21 ms |
+| Intersection of two 256-vertex polygons across ±180° | ~0.4 ms | ~0.4 ms |
+| Union of two GEO coverages (cube path) | ~1.7 ms | ~1.7 ms |
 
 **Correctness scenarios** (all are tests):
 - Boolean results satisfy |A∪B| = |A| + |B| − |A∩B|.
@@ -190,6 +192,7 @@ Measured baselines on the development machine (`cargo run --release --example be
 | A test point exactly on a polygon edge in the winding-offset correction | Wrong offset on one face | Test points chosen at "irrational" coordinates; very unlikely |
 | Point-in-polygon is O(n) per query | Slow for very large rings | Edge index (roadmap) |
 | Rust 1.81 pin | Older dependency versions | Revisit when the toolchain is upgraded |
+| RUSTSEC-2025-0165: `i_tree` 0.8.3 (via `i_overlay` 1.10) exposes unsound safe accessors (`Tree::node`, `Tree::mut_node`) | Undefined behaviour only if called with an out-of-range index; geometry_r never calls `i_tree`, and `i_overlay` passes internal indices | Accepted while on Rust 1.81: the fix (`i_tree` ≥ 0.10) needs `i_overlay` ≥ 2, whose dependencies need Rust ≥ 1.85 |
 
 ## 12. Glossary
 

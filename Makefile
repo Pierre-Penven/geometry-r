@@ -1,4 +1,4 @@
-.PHONY: all fmt lint test cov bench docs docs-check check
+.PHONY: all fmt lint test cov bench audit docs docs-check check
 
 all: check
 
@@ -18,6 +18,10 @@ cov:
 
 bench:
 	cargo run --release --example bench
+
+# Requires cargo-audit (built with a newer side toolchain, see docs/technical-design.md §9)
+audit:
+	cargo audit
 
 docs-check:
 	@bash scripts/docs/check_docs.sh

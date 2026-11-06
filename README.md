@@ -31,10 +31,12 @@ including across the **antimeridian** (±180°) and at the **poles**:
 
 ## Installation
 
-Add the crate to your project as a path dependency (it is not published to a
-registry; TODO: verify the distribution channel):
+Add the crate to your project from git, or from a local checkout. It is not
+published to a registry (TODO: verify the long-term distribution channel):
 
 ```sh
+cargo add geometry_r --git https://github.com/Pierre-Penven/geometry-r
+# or, from a local clone:
 cargo add geometry_r --path /path/to/geometry-r
 ```
 
@@ -174,8 +176,7 @@ cargo run --release --example bench
 
 ## Getting help and contributing
 
-- Issues: TODO: verify (no issue tracker or remote repository is configured
-  yet).
+- Issues and questions: <https://github.com/Pierre-Penven/geometry-r/issues>
 - Before sending a change, run `make check`. For coverage, run:
 
   ```sh
@@ -184,11 +185,11 @@ cargo run --release --example bench
   make cov
   ```
 - Project conventions and requirements: [`CLAUDE.md`](CLAUDE.md).
+- Dependency check: `cargo audit` (see the technical design, section 9).
 
 ## Licence and documentation
 
-- Licence: `MIT OR Apache-2.0` is declared in `Cargo.toml`, but the licence
-  files are not in the repository yet. TODO: verify.
+- Licence: MIT, see [LICENSE](LICENSE).
 - Architecture: [docs/arc42/architecture.md](docs/arc42/architecture.md)
 - C4 diagrams: [docs/c4/](docs/c4/)
 - Technical design: [docs/technical-design.md](docs/technical-design.md)

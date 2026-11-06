@@ -48,6 +48,11 @@ Note: the library is general-purpose. Do not mention any specific application
   `application-documentation` skills. Before saying any work is done, run
   `make check`. It runs clippy `-D warnings`, the tests (including README
   doctests), `cargo doc`, the doc checks, and `cargo fmt --check`.
+- Dependency audit: `make audit` (cargo-audit 0.22.2 built with
+  `cargo +1.88.0`; the 1.81-compatible 0.21.2 cannot parse CVSS 4.0
+  advisories). Known and accepted: RUSTSEC-2025-0165 (`i_tree` via
+  `i_overlay` 1.10), fixed only by moving to `i_overlay` ≥ 2, which needs
+  Rust ≥ 1.85.
 - Coverage: `make cov` (cargo-llvm-cov **0.6.21**, the last version for
   rustc 1.81, plus `llvm-tools-preview`). Branch coverage needs nightly, so
   use region coverage. Keep non-test regions at 100%; the regions still
