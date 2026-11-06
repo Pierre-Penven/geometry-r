@@ -3,7 +3,7 @@
 
 use crate::ellipsoid::{Ellipsoid, WGS84};
 use crate::error::{GeoError, Result};
-use crate::math::{wrap_pi, wrap_two_pi, Mat3, Vec3};
+use crate::math::{Mat3, Vec3, wrap_pi, wrap_two_pi};
 
 /// An ECEF position in metres. Alias of [`Vec3`] so that vector algebra
 /// applies directly.

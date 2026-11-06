@@ -12,14 +12,14 @@ test:
 	cargo test --all-features
 
 # Requires: rustup component add llvm-tools-preview
-#           cargo install cargo-llvm-cov --version 0.6.21 --locked
+#           cargo install cargo-llvm-cov --locked
 cov:
 	cargo llvm-cov --all-features --summary-only --show-missing-lines
 
 bench:
 	cargo run --release --example bench
 
-# Requires cargo-audit (built with a newer side toolchain, see docs/technical-design.md §9)
+# Requires: cargo install cargo-audit --locked
 audit:
 	cargo audit
 

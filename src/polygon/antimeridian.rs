@@ -2,9 +2,9 @@
 //! the antimeridian, closed through the poles) and antimeridian-aware
 //! bounding boxes.
 
-use super::planar::{orient_shape, push_window_offset, Contour};
-use super::{lonlat_to_unit, ring_edges, unit_to_lonlat, LonLat, Polygon};
-use crate::math::{wrap_lon_deg_closed, wrap_lon_delta_deg, Vec3};
+use super::planar::{Contour, orient_shape, push_window_offset};
+use super::{LonLat, Polygon, lonlat_to_unit, ring_edges, unit_to_lonlat};
+use crate::math::{Vec3, wrap_lon_deg_closed, wrap_lon_delta_deg};
 use i_overlay::core::{fill_rule::FillRule, overlay_rule::OverlayRule};
 use i_overlay::float::single::SingleFloatOverlay;
 
@@ -16,8 +16,8 @@ pub type LonLatPolygon = Vec<Vec<LonLat>>;
 /// window (any point works; this one is unlikely to sit on an edge).
 const WORLD_TEST_POINT: LonLat = [12.345_678_9, 7.123_456_7];
 
-/// The world rectangle, clockwise in mirrored coordinates (filled).
-const WORLD_FILLED: [[f64; 2]; 4] = [[-180.0, -90.0], [-180.0, 90.0], [180.0, 90.0], [180.0, -90.0]];
+/// The world rectangle, counter-clockwise (filled).
+const WORLD_FILLED: [[f64; 2]; 4] = [[-180.0, -90.0], [180.0, -90.0], [180.0, 90.0], [-180.0, 90.0]];
 
 /// Output coordinates within this many degrees of ±180 / ±90 are snapped
 /// to the exact value (planar snapping leaves ~1e-7° of noise).
@@ -74,11 +74,7 @@ fn antimeridian_crossing_lat(a: Vec3, b: Vec3) -> Option<f64> {
 }
 
 fn snap(v: f64, target: f64) -> f64 {
-    if (v - target).abs() < SNAP_DEG {
-        target
-    } else {
-        v
-    }
+    if (v - target).abs() < SNAP_DEG { target } else { v }
 }
 
 /// Repeats the first vertex at the end (GeoJSON rings are closed).
@@ -127,7 +123,7 @@ fn exact_rings(poly: &Polygon) -> LonLatPolygon {
 }
 
 /// Copies of every unwrapped ring shifted by multiples of 360° that overlap
-/// the world window, in mirrored coordinates.
+/// the world window.
 fn shifted_copies(rings: &[Unwrapped]) -> Vec<Contour> {
     let mut out = Vec::new();
     for r in rings {
@@ -138,7 +134,7 @@ fn shifted_copies(rings: &[Unwrapped]) -> Vec<Contour> {
         for k in -2..=2 {
             let shift = 360.0 * f64::from(k);
             if hi + shift > -180.0 && lo + shift < 180.0 {
-                out.push(r.pts.iter().map(|p| [p[0] + shift, -p[1]]).collect());
+                out.push(r.pts.iter().map(|p| [p[0] + shift, p[1]]).collect());
             }
         }
     }
@@ -149,24 +145,26 @@ fn split_with_overlay(poly: &Polygon, rings: &[Unwrapped]) -> Vec<LonLatPolygon>
     let mut subject = shifted_copies(rings);
     let originals = subject.clone();
     let restorer = Restorer::new(&originals);
-    let test_mirrored = [WORLD_TEST_POINT[0], -WORLD_TEST_POINT[1]];
     let want = poly.contains(lonlat_to_unit(WORLD_TEST_POINT));
-    push_window_offset(&mut subject, &WORLD_FILLED, test_mirrored, want);
+    push_window_offset(&mut subject, &WORLD_FILLED, WORLD_TEST_POINT, want);
     let clip = vec![WORLD_FILLED.to_vec()];
     subject
         .overlay(&clip, OverlayRule::Intersect, FillRule::Positive)
         .into_iter()
         .map(|mut shape| {
             orient_shape(&mut shape);
-            shape.iter().map(|c| close(unmirror(&restorer.restore(c)))).collect()
+            shape
+                .iter()
+                .map(|c| close(snap_to_edges(&restorer.restore(c))))
+                .collect()
         })
         .collect()
 }
 
-/// Mirrored planar contour → lon/lat ring, snapping to ±180 / ±90.
-fn unmirror(c: &[[f64; 2]]) -> Vec<LonLat> {
+/// Snaps coordinates within [`SNAP_DEG`] of ±180 / ±90 to the exact value.
+fn snap_to_edges(c: &[[f64; 2]]) -> Vec<LonLat> {
     c.iter()
-        .map(|p| [snap(snap(p[0], 180.0), -180.0), snap(snap(-p[1], 90.0), -90.0)])
+        .map(|p| [snap(snap(p[0], 180.0), -180.0), snap(snap(p[1], 90.0), -90.0)])
         .collect()
 }
 
@@ -365,8 +363,8 @@ pub fn bounding_box(poly: &Polygon) -> LonLatBox {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::polygon::planar::signed_area;
     use crate::polygon::Orientation;
+    use crate::polygon::planar::signed_area;
     use approx::assert_abs_diff_eq;
 
     fn rect(lon0: f64, lat0: f64, lon1: f64, lat1: f64) -> Polygon {

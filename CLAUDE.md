@@ -37,32 +37,31 @@ Note: the library is general-purpose. Do not mention any specific application
 
 ## 2. Toolchain and constraints
 
-- **Rust 1.81** (installed toolchain; `rust-version = "1.81"` in Cargo.toml).
-  Every dependency must build on 1.81. Check this before adding a crate.
-  - `geo` 0.29 does **not** build: its transitive dependency `spade` needs a newer
-    rustc. Do not depend on `geo`.
-  - `i_overlay` 1.10 builds and is the planar boolean engine.
-- Dependencies so far: `thiserror` 1, `serde_json`, `i_overlay` 1.10, and
-  `rayon` (optional). Dev dependency: `approx`.
+- **Edition 2024, MSRV Rust 1.88** (`rust-version = "1.88"` in Cargo.toml),
+  developed on the latest stable.
+  - 1.88 is the real minimum: the `i_overlay` 4 dependency chain uses `let`
+    chains (`i_shape` 1.18). CI runs the tests on 1.88. Locally, run
+    `cargo +1.88.0 test --all-features` before raising a dependency.
+  - The 2024 edition's resolver picks versions compatible with
+    `rust-version` when a crate declares one.
+- Dependencies: `i_overlay` 4.5 (planar boolean engine), `serde_json` 1,
+  `thiserror` 2, and `rayon` 1.12 (optional). Dev dependency: `approx`.
 - Follow the `rust-development`, `unit-testing-coverage`, `clean-code` and
   `application-documentation` skills. Before saying any work is done, run
   `make check`. It runs clippy `-D warnings`, the tests (including README
   doctests), `cargo doc`, the doc checks, and `cargo fmt --check`.
 - CI: `.github/workflows/ci.yml` runs on every PR and push to `main`:
   - fmt, clippy, tests (all features and default features), rustdoc
-    `-D warnings` and the doc checks, on Rust 1.81
-  - tests on the latest stable
+    `-D warnings` and the doc checks, on the latest stable
+  - tests on the MSRV (1.88)
   - `cargo audit`
   - `cargo llvm-cov` (lcov uploaded as an artifact)
   Keep it green before merging.
-- Dependency audit: `make audit` (cargo-audit 0.22.2 built with
-  `cargo +1.88.0`; the 1.81-compatible 0.21.2 cannot parse CVSS 4.0
-  advisories). Known and accepted: RUSTSEC-2025-0165 (`i_tree` via
-  `i_overlay` 1.10), fixed only by moving to `i_overlay` ≥ 2, which needs
-  Rust ≥ 1.85.
-- Coverage: `make cov` (cargo-llvm-cov **0.6.21**, the last version for
-  rustc 1.81, plus `llvm-tools-preview`). Branch coverage needs nightly, so
-  use region coverage. Keep non-test regions at 100%; the regions still
+- Dependency audit: `make audit` (`cargo install cargo-audit --locked`).
+  Expect a clean result.
+- Coverage: `make cov` (`cargo install cargo-llvm-cov --locked` plus
+  `rustup component add llvm-tools-preview`). Branch coverage needs nightly,
+  so use region coverage. Keep non-test regions at 100%; the regions still
   reported are assertion failure arms in test code.
 - Documentation:
   - `docs/arc42/architecture.md`, `docs/c4/*.md` (Mermaid),
@@ -76,14 +75,15 @@ Note: the library is general-purpose. Do not mention any specific application
 - Errors: one `GeoError` enum (thiserror). Never call `unwrap` on input. Tests
   assert specific error variants.
 
-### i_overlay facts (verified)
+### i_overlay facts (verified on 4.5)
 - Points are `[f64; 2]` and shapes are `Vec<Vec<[f64; 2]>>`. Use
   `SingleFloatOverlay::overlay(&clip, OverlayRule, FillRule)`.
-- In a y-up frame, **`FillRule::Positive` fills clockwise contours**. Counter-
-  clockwise contours count as negative.
-- Output: outer contours are clockwise, holes counter-clockwise, and contours are
-  not closed (no repeated first point). Re-orient after every call. Do not rely on
-  this convention silently: wrap it in one adapter function.
+- In a y-up frame, **`FillRule::Positive` fills counter-clockwise contours**.
+  Clockwise contours count as negative. This is the opposite of 1.x, which
+  forced a y-mirroring workaround that is now gone.
+- Output: outer contours are counter-clockwise, holes clockwise, and contours
+  are not closed (no repeated first point). Do not rely on this silently: every
+  output goes through `polygon::planar::orient_shape`.
 - An empty clip set works with `OverlayRule::Subject`, which is how a self-union
   (dissolve) is done.
 - Precision: floats are snapped to an adaptive i32 grid, about extent/2³⁰. This is
@@ -216,7 +216,7 @@ src/
   lib.rs          crate docs, module list, prelude
   error.rs        GeoError, Result
   math.rs         Vec3, Mat3, angle wrapping
-  ellipsoid.rs    Ellipsoid, WGS84 (literal const), constants, ray intersection
+  ellipsoid.rs    Ellipsoid (const fn new), WGS84, constants, ray intersection
   coords.rs       Geodetic, Ecef, LocalFrame (ENU), LookAngles
   geodesic.rs     great-circle, Vincenty, cross-track
   look.rs         visibility, HorizonMask, separations, GSO arc, pol skew
@@ -230,7 +230,7 @@ src/
     antimeridian.rs  RFC 7946 split (with collinear-vertex restoration), lon/lat bbox
   geojson.rs      parse and serialize
   batch.rs        batch, `*_into` and `par::*` (feature `parallel`) APIs
-examples/         quickstart.rs, bench.rs (std::time micro-benchmarks; criterion needs newer rustc)
+examples/         quickstart.rs, bench.rs (std::time micro-benchmarks)
 tests/scenarios.rs  integration: antimeridian, poles, GEO/LEO, GeoJSON round trip, membership checks
 ```
 
@@ -257,13 +257,16 @@ Conventions:
 
 Open items / roadmap:
 - Seam-free stitching of cube-face results larger than a hemisphere.
+- Statistical benchmarks with `criterion` (now possible on the current toolchain).
 - Karney geodesics (removes Vincenty's antipodal failure).
 - Faster point-in-polygon for big rings (edge index or gnomonic fast path).
 - ITU antenna patterns (S.465, S.672, S.1528) beyond the Gaussian main lobe.
 
 ## 6b. Implementation notes (learned the hard way)
-- Rust 1.81 has no float arithmetic in `const fn`, so `WGS84` is a literal
-  struct. Keep it in sync with `Ellipsoid::new` (a test checks this).
+- Upgrading i_overlay from 1.x to 4.x flipped its orientation convention.
+  All orientation handling lives in `polygon::planar`, so the fix was local.
+  Re-check the convention (see the i_overlay facts above) after any i_overlay
+  upgrade.
 - Clippy rejects `!(x > 0.0)`. Write `x.is_nan() || x <= 0.0` to keep
   rejecting NaN.
 - Arc crossing (`polygon::arcs_cross`) uses a half-open rule: a vertex exactly

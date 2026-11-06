@@ -2,9 +2,9 @@
 //! geometry, GeoJSON round trips and polygon-operation consistency.
 
 use approx::assert_abs_diff_eq;
-use geometry_r::footprint::{beam_footprint, coverage_contour, Beam, BeamShape};
+use geometry_r::footprint::{Beam, BeamShape, beam_footprint, coverage_contour};
 use geometry_r::geojson::{self, EdgeInterpretation, ReadOptions, WriteOptions};
-use geometry_r::polygon::{lonlat_to_unit, MultiPolygon, Polygon};
+use geometry_r::polygon::{MultiPolygon, Polygon, lonlat_to_unit};
 use geometry_r::prelude::*;
 use geometry_r::satellite::NadirReference;
 use std::f64::consts::PI;

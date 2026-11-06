@@ -23,8 +23,8 @@ C4Container
 
 | Element | Technology | Notes |
 |---|---|---|
-| geometry_r | Rust 1.81 library | Modules listed in [3-components.md](3-components.md). |
-| i_overlay | Rust crate 1.10 | Used only through `polygon::boolean` and `polygon::antimeridian`, behind the orientation adapter in `polygon::planar`. |
+| geometry_r | Rust library (edition 2024, MSRV 1.88) | Modules listed in [3-components.md](3-components.md). |
+| i_overlay | Rust crate 4.5 | Used only through `polygon::boolean` and `polygon::antimeridian`, behind the orientation adapter in `polygon::planar`. |
 | serde_json | Rust crate 1.x | Used only by `geojson`. |
-| rayon | Rust crate 1.10 (optional) | Used only by `batch::par`. |
-| thiserror | Rust crate 1.x | Derives `GeoError` at compile time; not shown. |
+| rayon | Rust crate 1.12 (optional) | Used only by `batch::par`. |
+| thiserror | Rust crate 2.x | Derives `GeoError` at compile time; not shown. |

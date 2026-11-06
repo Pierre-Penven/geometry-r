@@ -2,10 +2,10 @@
 //! circular / elliptical beam footprints, analytic point-in-beam tests and a
 //! Gaussian main-lobe gain model.
 
-use crate::coords::{ecef_to_geodetic, Ecef};
+use crate::coords::{Ecef, ecef_to_geodetic};
 use crate::ellipsoid::{Ellipsoid, WGS84};
 use crate::error::{GeoError, Result};
-use crate::math::{bisect_last_true, Vec3};
+use crate::math::{Vec3, bisect_last_true};
 use crate::polygon::{Orientation, Polygon};
 use crate::satellite::SatelliteFrame;
 use std::f64::consts::{FRAC_PI_2, TAU};
@@ -272,7 +272,7 @@ mod tests {
     use crate::coords::{Geodetic, LocalFrame};
     use crate::ellipsoid::EARTH_MEAN_RADIUS_M;
     use crate::polygon::lonlat_to_unit;
-    use crate::satellite::{central_angle_for_elevation, geo_satellite_position, NadirReference, ScanAngles};
+    use crate::satellite::{NadirReference, ScanAngles, central_angle_for_elevation, geo_satellite_position};
     use approx::assert_abs_diff_eq;
 
     fn geo_frame(lon_deg: f64) -> SatelliteFrame {

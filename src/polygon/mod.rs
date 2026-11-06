@@ -17,7 +17,7 @@ pub mod antimeridian;
 pub mod boolean;
 mod planar;
 
-use crate::ellipsoid::{Ellipsoid, EARTH_AUTHALIC_RADIUS_M};
+use crate::ellipsoid::{EARTH_AUTHALIC_RADIUS_M, Ellipsoid};
 use crate::error::{GeoError, Result};
 use crate::geodesic::slerp;
 use crate::math::Vec3;
@@ -823,10 +823,12 @@ mod tests {
         assert!(u.contains(Vec3::X) && u.contains(Vec3::Y));
         assert_abs_diff_eq!(u.radius_rad(), FRAC_PI_4 + 0.1, epsilon = 1e-9);
         assert_eq!(a.union(&Cap::new(Vec3::X, 0.05).unwrap()), a);
-        assert!(Cap::new(Vec3::X, 2.0)
-            .unwrap()
-            .union(&Cap::new(-Vec3::X, 2.0).unwrap())
-            .is_full());
+        assert!(
+            Cap::new(Vec3::X, 2.0)
+                .unwrap()
+                .union(&Cap::new(-Vec3::X, 2.0).unwrap())
+                .is_full()
+        );
         assert!(matches!(Cap::new(Vec3::ZERO, 1.0), Err(GeoError::InvalidArgument(_))));
         assert!(matches!(Cap::new(Vec3::X, f64::NAN), Err(GeoError::InvalidArgument(_))));
         assert!(Cap::full().contains(-Vec3::Z));

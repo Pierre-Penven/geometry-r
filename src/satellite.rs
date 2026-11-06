@@ -1,10 +1,10 @@
 //! Satellite-centred geometry: body frames, scan angles, inverse scan to the
 //! ground, and the closed-form nadir / elevation / central-angle relations.
 
-use crate::coords::{ecef_to_geodetic, Ecef, Geodetic};
-use crate::ellipsoid::{Ellipsoid, EARTH_ROTATION_RATE_RAD_S, GEO_RADIUS_M, WGS84};
+use crate::coords::{Ecef, Geodetic, ecef_to_geodetic};
+use crate::ellipsoid::{EARTH_ROTATION_RATE_RAD_S, Ellipsoid, GEO_RADIUS_M, WGS84};
 use crate::error::{GeoError, Result};
-use crate::math::{wrap_two_pi, Mat3, Vec3};
+use crate::math::{Mat3, Vec3, wrap_two_pi};
 
 /// Which "down" direction defines the nadir of a satellite frame.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

@@ -1,12 +1,12 @@
-//! Micro-benchmarks with `std::time` (criterion does not support the
-//! project's Rust 1.81 toolchain).
+//! Micro-benchmarks with `std::time` (a quick, dependency-free check against
+//! the performance targets in `docs/arc42/architecture.md` §10).
 //!
 //! Run with `cargo run --release --example bench`.
 
 use geometry_r::batch;
 use geometry_r::coords::{ecef_to_geodetic, geodetic_to_ecef};
-use geometry_r::footprint::{coverage_contour, Beam, BeamShape};
-use geometry_r::polygon::{lonlat_to_unit, MultiPolygon, Polygon};
+use geometry_r::footprint::{Beam, BeamShape, coverage_contour};
+use geometry_r::polygon::{MultiPolygon, Polygon, lonlat_to_unit};
 use geometry_r::prelude::*;
 use geometry_r::satellite::NadirReference;
 use std::hint::black_box;
