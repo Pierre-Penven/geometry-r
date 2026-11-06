@@ -164,6 +164,7 @@ Per-call options are plain structs: `geojson::ReadOptions`, `WriteOptions` and
 | Benchmarks | `make bench` |
 | API docs | `make docs` (also runs the doc checks) |
 | Everything | `make check` |
+| CI | GitHub Actions (`.github/workflows/ci.yml`): every PR and push to `main` runs the 1.81 checks, tests on latest stable, `cargo audit` and coverage |
 
 **Deploy:** the host adds the crate as a Cargo dependency, from a local path
 or from git (`https://github.com/Pierre-Penven/geometry-r`). It is not
