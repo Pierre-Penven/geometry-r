@@ -165,8 +165,9 @@ Per-call options are plain structs: `geojson::ReadOptions`, `WriteOptions` and
 | API docs | `make docs` (also runs the doc checks) |
 | Everything | `make check` |
 
-**Deploy:** the host adds the crate as a Cargo dependency. Publishing to a
-registry is TODO: verify.
+**Deploy:** the host adds the crate as a Cargo dependency, from a local path
+or from git (`https://github.com/Pierre-Penven/geometry-r`). It is not
+published to a registry. TODO: verify the long-term distribution channel.
 
 ## 8. Operations
 
@@ -191,7 +192,16 @@ owns those. Failure modes surface as `GeoError` values:
   sets no hard limits. Hosts that accept untrusted GeoJSON should cap the
   payload size and vertex count before parsing.
 - Dependencies: `i_overlay`, `serde_json`, `thiserror`, and optionally
-  `rayon`. `cargo audit` is not installed; running it is TODO: verify.
+  `rayon`. Run `cargo audit` to check them against the RustSec database.
+  - The last audit (2026-11-06) found 0 vulnerabilities and 1 informational
+    warning: RUSTSEC-2025-0165, `i_tree` 0.8.3 "unsound", pulled in by
+    `i_overlay` 1.10.
+  - geometry_r never calls the affected functions. The fix needs a newer
+    toolchain (see the risks in the arc42 document).
+  - The tool is `cargo-audit` 0.22.2, built with a side toolchain
+    (`cargo +1.88.0 install cargo-audit --locked`) because the version that
+    builds on 1.81 (0.21.2) cannot parse current advisories that use CVSS 4.0
+    scores.
 
 ## 10. Known Limitations
 
